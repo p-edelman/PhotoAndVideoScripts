@@ -33,8 +33,8 @@ Where options are:"
   echo "---deinterlace
              Deinterlace the video before stabilizing it. The shakiness
              detection doesn't work very well on interlaced videos."
-  echo "--ignore-trf
-             Ignore previously generated .trf file."
+  echo "--overwrite-trf
+             Overwrite previously generated .trf file."
   echo "--script
              Write out a bash script to reproduce the steps to transform the
              input video file to the output video file. It has the same file  
@@ -62,7 +62,7 @@ function execute() {
   fi
 }
 
-if ! OPTIONS=$(getopt -u -o s:a:o:h -l shakiness:,averaging:,optzoom:,deinterlace,ignore-trf,script,from:,top: -- "$@")
+if ! OPTIONS=$(getopt -u -o s:a:o:h -l shakiness:,averaging:,optzoom:,deinterlace,overwrite-trf,script,from:,top: -- "$@")
 then
   exit 1
 fi
@@ -72,15 +72,15 @@ set -- $OPTIONS
 while [ $# -gt 0 ]
 do
   case $1 in
-    -s|--shakiness) SHAKINESS="$2"; shift ;;
-    -a|--averaging) SMOOTHING="$2"; shift ;;
-    -o|--optzoom)   OPTZOOM="$2";   shift ;;
-    --deinterlace)  DEINTERLACE=1;;
-    --ignore-trf)   GENERATETRF=1;;
-    --script)       EMITSCRIPT=1;;
-    --from)         FROM="-ss $2 "; shift;;
-    --top)          TO="-to $2 ";    shift;;
-    -h| --help)     show_help;;
+    -s|--shakiness)  SHAKINESS="$2"; shift ;;
+    -a|--averaging)  SMOOTHING="$2"; shift ;;
+    -o|--optzoom)    OPTZOOM="$2";   shift ;;
+    --deinterlace)   DEINTERLACE=1;;
+    --overwrite-trf) GENERATETRF=1;;
+    --script)        EMITSCRIPT=1;;
+    --from)          FROM="-ss $2 "; shift;;
+    --top)           TO="-to $2 ";    shift;;
+    -h| --help)      show_help;;
     (--) shift; break;;
     (*) break;;
   esac

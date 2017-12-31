@@ -57,8 +57,8 @@ The movement analysis file (the .trf file) will be retained and reused on a seco
     ---deinterlace
                  Deinterlace the video before stabilizing it. The shakiness
                  detection doesn't work very well on interlaced videos.
-    --ignore-trf
-                 Ignore previously generated .trf file.
+    --overwrite-trf
+                 Overwrite previously generated .trf file.
     --script
                  Write out a bash script to reproduce the steps to transform the
                  input video file to the output video file. It has the same file  
