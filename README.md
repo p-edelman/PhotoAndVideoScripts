@@ -4,6 +4,8 @@
 
 A script that let's you figure out the offset of the camera clock. It works by taking a picture of a second-accurate clock and comparing that to the EXIF time.
 
+This is especially useful if you want to correlate images with a GPS track, since second-accuracy is required to find the best match.
+
 ### Requirements
 
 - Python3
@@ -18,6 +20,44 @@ Then, run:
     telltimeadjustment.py IMAGE_FILE TIMESTAMP
 
 The result will be the offset off the camera to the actual time.
+
+## correctphotodrift.py
+
+Continuation of ```telltimeadjustment.py``` that corrects the date and time in a bunch of photo files based on a list of reference images.
+
+Camera clocks tend to drift over time (quite a bit, I've noticed) so if you have a photo project that spans multiple days, it's better to work with multiple reference photos. Unfortunately, the drift isn't exactly linear, so the more reference photos, the better.
+
+This script uses a list of reference timestamps to figure out how the time on each photo should be adjusted, and applies this adjustment. A simple interpolation between reference timestamps is used (or for photo on the edges, between the two closest timestamps).
+
+## Requirements
+
+- Python3
+- Exiftool
+
+### Usage
+
+First, create reference photos by taking pictures of a second-accurate clock (a GPS, a computer synced by NTP, etc.)
+
+Second, create a .csv file, where each line consists of:
+
+- the exif datetime (use ```exiftool -CreateDate``` to find out)
+- a comma
+- the actual datetime (the time shown on the photo)
+- all in the format YYYY-MM-DD HH:MM:SS
+
+For example, create a file called ```camera.csv``` containing the lines:
+
+    2017-10-21 10:55:58,2017-10-21 11:03:25
+    2017-10-24 08:27:07,2017-10-24 08:34:41
+    2017-10-25 13:12:26,2017-10-25 13:20:03
+    2017-10-26 05:42:29,2017-10-26 05:50:08
+    2017-10-29 17:15:46,2017-10-29 17:23:35
+
+Then, run the script:
+
+    correctphotodrift -c csv_file photo_files
+    
+The script will correct the time on each photo and print out the result. The original files will be saved with the extension _original (this is default behavior for Exiftool). You might want to delete these original files afterwards.
 
 ## stabilizevideo.sh
 
