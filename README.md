@@ -1,4 +1,6 @@
-# A collection of useful scripts to manipulate photo and video files
+# Photo and video scripts
+
+A collection of useful scripts to manipulate photo and video files
 
 ## telltimeadjustment.py
 
@@ -57,7 +59,7 @@ Then, run the script:
 
     correctphotodrift -c csv_file photo_files
     
-The script will correct the time on each photo and print out the result. The original files will be saved with the extension _original (this is default behavior for Exiftool). You might want to delete these original files afterwards.
+The script will correct the time on each photo and print out the result. The original files will be saved with ```_original``` appended to the file name (this is default behavior for Exiftool). You might want to delete these original files afterwards.
 
 ## stabilizevideo.sh
 
