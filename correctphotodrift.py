@@ -23,8 +23,8 @@ def readCSVFile(path):
     for line in in_file.readlines():
       try:
         exif, real = line.split(",")
-        exif = parseDateTime(real.strip())
-        real = parseDateTime(exif.strip())
+        exif = parseDateTime(exif.strip())
+        real = parseDateTime(real.strip())
         time_points.append(TimePoint(exif, real))
       except ValueError:
         raise Exception("CSV file not correctly formatted")
