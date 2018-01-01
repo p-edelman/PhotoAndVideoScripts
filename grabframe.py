@@ -61,7 +61,7 @@ class TimeFormat:
     seconds = seconds % 60
     
     # Round subseconds to nearest second
-    if float(self.s_sub) >= 0.5:
+    if self.s_sub and float(self.s_sub) >= 0.5:
       seconds += 1
     
     ret_str = "%02d:%02d:%02d" % (hours, minutes, seconds)
