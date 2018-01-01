@@ -112,3 +112,23 @@ The movement analysis file (the .trf file) will be retained and reused on a seco
                  Process only the specified part of the video.
     -h, --help
                  Print out this help and exit.
+
+## grabframe.py
+
+Save single frames from a video to jpg file, with the correct timestamp
+
+### Requirements
+
+- Python3
+- FFmpeg
+- Exiftool
+
+### Usage
+
+    grabframe.py VIDEO_FILE TIMESTAMP1 [TIMESTAMP2 TIMESTAMP3 ...]
+    
+The time stamps can be formatted in [HH]:MM:SS.[sss] format, with the minutes and second specified with one or two digits. The hours and subseconds are optional.
+
+Alternatively, the number of seconds and optionally subseconds can be used.
+
+The files will be saved under the name of the video file combined with sequence number
