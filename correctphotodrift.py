@@ -60,18 +60,21 @@ def processPhoto(path, time_points):
   if not os.path.exists(path):
     raise Exception("Photo file %s does not exist" % path)
   
-  # Run exiftool to extract the timestamp
-  result = subprocess.run(["exiftool", "-veryShort", "-DateTimeOriginal", "-d", DATE_FORMAT, path], stdout = subprocess.PIPE)
-  #result = subprocess.run(["exiftool", "-veryShort", "-CreateDate", "-d", DATE_FORMAT, path], stdout = subprocess.PIPE)
-  if result.returncode != 0:
-    raise Exception("Exiftool failed on %s" % path)
+  # Run exiftool to extract the timestamp. We try both the DateTimeOriginal and
+  # CreateDate tags, because one of them might be absent
+  exif = None
+  for tag in ["DateTimeOriginal", "CreateDate"]:
+    result = subprocess.run(["exiftool", "-veryShort", "-%s" % tag, "-d", DATE_FORMAT, path], stdout = subprocess.PIPE)
+    if result.returncode != 0:
+      raise Exception("Exiftool failed on %s" % path)
   
-  # Parse the result
-  match = re.match("DateTimeOriginal:\s+(.*)\s*", result.stdout.decode("utf-8"))
-  #match = re.match("CreateDate:\s+(.*)\s*", result.stdout.decode("utf-8"))
-  if match:
-    exif = parseDateTime(match.group(1))
-  else:
+    # Parse the result
+    match = re.match("%s:\s+(.*)\s*" % tag, result.stdout.decode("utf-8"))
+    if match:
+      exif = parseDateTime(match.group(1))
+      break
+  
+  if not exif:
     raise Exception("DateTime couldn't be extracted from %s" % path)
   
   # Calculate the correct time
