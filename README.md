@@ -132,3 +132,18 @@ The time stamps can be formatted in [HH]:MM:SS.[sss] format, with the minutes an
 Alternatively, the number of seconds and optionally subseconds can be used.
 
 The files will be saved under the name of the video file combined with sequence number
+
+## setmovierotation.sh
+
+Set the rotation flag of a movie file to turn it upside down or sideways. This is a lossless operation, but not all video players support the flag.
+
+### Requirements
+
+- Bash
+- FFmpeg
+
+### Usage
+
+    setmovierotation.sh MOVIE_FILE DEGREES
+
+Where degrees can be one of 0, 90, 180 or 270.
