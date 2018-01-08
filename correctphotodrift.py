@@ -56,17 +56,22 @@ def correctTimestamp(timestamp, time_points):
   # Use these values to calculate the correct time
   return datetime.datetime.fromtimestamp(round(timestamp * slope + offset))
 
-def processPhoto(path, time_points):
-  if not os.path.exists(path):
-    raise Exception("Photo file %s does not exist" % path)
+def processPhoto(photo_path, time_points, dry_run = False):
+  """ Correct the time stamp of the photo specified at photo_path, using the
+      time_points tuple to interpolate to the correct time. The result will be
+      printed to stdout.
+      If dry_run is True, nothing will be actually written. """
+      
+  if not os.path.exists(photo_path):
+    raise Exception("Photo file %s does not exist" % photo_path)
   
   # Run exiftool to extract the timestamp. We try both the DateTimeOriginal and
   # CreateDate tags, because one of them might be absent
   exif = None
   for tag in ["DateTimeOriginal", "CreateDate"]:
-    result = subprocess.run(["exiftool", "-veryShort", "-%s" % tag, "-d", DATE_FORMAT, path], stdout = subprocess.PIPE)
+    result = subprocess.run(["exiftool", "-veryShort", "-%s" % tag, "-d", DATE_FORMAT, photo_path], stdout = subprocess.PIPE)
     if result.returncode != 0:
-      raise Exception("Exiftool failed on %s" % path)
+      raise Exception("Exiftool failed on %s" % photo_path)
   
     # Parse the result
     match = re.match("%s:\s+(.*)\s*" % tag, result.stdout.decode("utf-8"))
@@ -75,24 +80,31 @@ def processPhoto(path, time_points):
       break
   
   if not exif:
-    raise Exception("DateTime couldn't be extracted from %s" % path)
+    raise Exception("DateTime couldn't be extracted from %s" % photo_path)
   
   # Calculate the correct time
   corrected = correctTimestamp(exif, time_points)
-  result = subprocess.run(["exiftool", "-alldates=" + corrected.strftime(DATE_FORMAT), "-d", DATE_FORMAT, path], stdout = subprocess.PIPE)
-  if result.returncode == 0:
-    print("Corrected %s by %.0f seconds" % (path, exif - corrected.timestamp()))
+  
+  # Write the corrected time to the photo file
+  if not dry_run:
+    result = subprocess.run(["exiftool", "-alldates=" + corrected.strftime(DATE_FORMAT), "-d", DATE_FORMAT, photo_path], stdout = subprocess.PIPE)
+    if result.returncode == 0:
+      print("Shifted %s by %+.0f seconds" % (photo_path, corrected.timestamp() - exif))
+    else:
+      print("Error with %s" % photo_path)
   else:
-    print("Error with %s" % path)
+    print("%s will be shifted by %+.0f seconds" % (photo_path, corrected.timestamp() - exif))
   
 if __name__ == "__main__":
   # Build a parser and parse the command line
   parser = argparse.ArgumentParser(description = "Correct the time for a given photo based on a list of samples of clock drift.")
+  parser.add_argument("-n", "--dry-run", action = "store_true",
+                      help = "Don't alter any files, just print out what would be done")
   parser.add_argument('csv_file', type = str, help = "The CSV file with the samples. It should contain rows with exif and real time, seperated by a comma, both in format \"yyyy-mm-dd hh:mm:ss\"")
   parser.add_argument('photo', type = str, nargs = "+")
   
   args = parser.parse_args()
-
+ 
   # Check if exiftool is there
   try:
     status = subprocess.run(["exiftool", "-ver"], stdout = subprocess.PIPE)
@@ -104,4 +116,4 @@ if __name__ == "__main__":
   time_points = readCSVFile(args.csv_file)
 
   for photo in args.photo:
-    processPhoto(photo, time_points)
+    processPhoto(photo, time_points, args.dry_run)
