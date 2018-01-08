@@ -34,8 +34,8 @@ def readCSVFile(path):
   return time_points
   
 def correctTimestamp(timestamp, time_points):
-  # Find two points to use for interpolition. If the timestamp lies before or
-  # after the range, use the two neares points.
+  # Find two points to use for interpolation. If the timestamp lies before or
+  # after the range, use the two nearest points.
   if timestamp <= time_points[0].exif:
     start = time_points[0]
     end   = time_points[1]
@@ -55,7 +55,7 @@ def correctTimestamp(timestamp, time_points):
   
   # Use these values to calculate the correct time
   return datetime.datetime.fromtimestamp(round(timestamp * slope + offset))
-  
+
 def processPhoto(path, time_points):
   if not os.path.exists(path):
     raise Exception("Photo file %s does not exist" % path)
@@ -88,8 +88,7 @@ def processPhoto(path, time_points):
 if __name__ == "__main__":
   # Build a parser and parse the command line
   parser = argparse.ArgumentParser(description = "Correct the time for a given photo based on a list of samples of clock drift.")
-  parser.add_argument("-c", dest = "csv_file", required = True,
-                      help = "The CSV file with the samples. It should contain rows with exif and real time, seperated by a comma, both in format \"yyyy-mm-dd hh:mm:ss\"")
+  parser.add_argument('csv_file', type = str, help = "The CSV file with the samples. It should contain rows with exif and real time, seperated by a comma, both in format \"yyyy-mm-dd hh:mm:ss\"")
   parser.add_argument('photo', type = str, nargs = "+")
   
   args = parser.parse_args()
