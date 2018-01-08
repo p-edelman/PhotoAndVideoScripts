@@ -56,11 +56,12 @@ def correctTimestamp(timestamp, time_points):
   # Use these values to calculate the correct time
   return datetime.datetime.fromtimestamp(round(timestamp * slope + offset))
 
-def processPhoto(photo_path, time_points, dry_run = False):
+def processPhoto(photo_path, time_points, possible_tags, dry_run = False):
   """ Correct the time stamp of the photo specified at photo_path, using the
-      time_points tuple to interpolate to the correct time. The result will be
-      printed to stdout.
-      If dry_run is True, nothing will be actually written. """
+      time_points tuple to interpolate to the correct time and the tag names in
+      the possible_tags array to read the metadata value from the file.
+      A report will be printed to stdout.
+      If dry_run is True, the photo isn't actually modified. """
       
   if not os.path.exists(photo_path):
     raise Exception("Photo file %s does not exist" % photo_path)
@@ -68,7 +69,7 @@ def processPhoto(photo_path, time_points, dry_run = False):
   # Run exiftool to extract the timestamp. We try both the DateTimeOriginal and
   # CreateDate tags, because one of them might be absent
   exif = None
-  for tag in ["DateTimeOriginal", "CreateDate"]:
+  for tag in possible_tags:
     result = subprocess.run(["exiftool", "-veryShort", "-%s" % tag, "-d", DATE_FORMAT, photo_path], stdout = subprocess.PIPE)
     if result.returncode != 0:
       raise Exception("Exiftool failed on %s" % photo_path)
@@ -89,17 +90,22 @@ def processPhoto(photo_path, time_points, dry_run = False):
   if not dry_run:
     result = subprocess.run(["exiftool", "-alldates=" + corrected.strftime(DATE_FORMAT), "-d", DATE_FORMAT, photo_path], stdout = subprocess.PIPE)
     if result.returncode == 0:
-      print("Shifted %s by %+.0f seconds" % (photo_path, corrected.timestamp() - exif))
+      print("Shifted %s (from %s tag) by %+.0f seconds" % (photo_path, tag, corrected.timestamp() - exif))
     else:
       print("Error with %s" % photo_path)
   else:
-    print("%s will be shifted by %+.0f seconds" % (photo_path, corrected.timestamp() - exif))
+    print("%s will be shifted (from %s tag) by %+.0f seconds" % (photo_path, tag, corrected.timestamp() - exif))
   
 if __name__ == "__main__":
   # Build a parser and parse the command line
   parser = argparse.ArgumentParser(description = "Correct the time for a given photo based on a list of samples of clock drift.")
   parser.add_argument("-n", "--dry-run", action = "store_true",
                       help = "Don't alter any files, just print out what would be done")
+  tag_group = parser.add_mutually_exclusive_group()
+  tag_group.add_argument("-d", "--no-datetimeoriginal", dest = "datetimeoriginal", action = "store_false",
+                         help = "Don't use the DateTimeOriginal tag to determine photo date and time")
+  tag_group.add_argument("-c", "--no-createdate", dest = "createdate", action = "store_false",
+                         help = "Don't use the CreateDate tag to determine photo date and time")
   parser.add_argument('csv_file', type = str, help = "The CSV file with the samples. It should contain rows with exif and real time, seperated by a comma, both in format \"yyyy-mm-dd hh:mm:ss\"")
   parser.add_argument('photo', type = str, nargs = "+")
   
@@ -115,5 +121,8 @@ if __name__ == "__main__":
   
   time_points = readCSVFile(args.csv_file)
 
+  possible_tags = []
+  if args.datetimeoriginal: possible_tags.append("DateTimeOriginal")
+  if args.createdate:       possible_tags.append("CreateDate")
   for photo in args.photo:
-    processPhoto(photo, time_points, args.dry_run)
+    processPhoto(photo, time_points, possible_tags, args.dry_run)
