@@ -23,7 +23,7 @@ class MetaDataDateTime:
     
     # The list of datetime related tags that we have in the metadata
     self._tags = []
-    
+        
     # The datetime of the image as a seconds since epoch float
     self._original_dt  = None
     self._corrected_dt = None
@@ -52,15 +52,14 @@ class MetaDataDateTime:
     # Analyze the result
     used_tag = None
     for tag in self.known_tags:
-      if tag in stdout:
+      match = re.search("^%s:\s+(.*)\s*" % tag, stdout, re.MULTILINE)
+      if match:
         self._tags.append(tag)
         
         # Extract the datetime if we don't have it yet
         if not self._original_dt and tag not in ignore_read_tags:
-          match = re.search("%s:\s+(.*)\s*" % tag, stdout)
-          if match:
-            used_tag = tag
-            self._original_dt = parseDateTime(match.group(1))
+          used_tag = tag
+          self._original_dt = parseDateTime(match.group(1))
     
     if not self._original_dt:
       raise Exception("Couldn't read date and time information from %s" % self._path)
