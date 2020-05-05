@@ -31,7 +31,7 @@ Camera clocks tend to drift over time (quite a bit, I've noticed) so if you have
 
 This script uses a list of reference timestamps to figure out how the time on each photo should be adjusted, and applies this adjustment. A simple interpolation between reference timestamps is used (or for photo on the edges, between the two closest timestamps).
 
-## Requirements
+### Requirements
 
 - Python3
 - Exiftool
@@ -147,3 +147,23 @@ Set the rotation flag of a movie file to turn it upside down or sideways. This i
     setmovierotation.sh MOVIE_FILE DEGREES
 
 Where degrees can be one of 0, 90, 180 or 270.
+
+## extractmotionphoto.py
+
+Save the video from a Samsung Motion Photo as an .mp4 file, optionally removing the video from the original file.
+
+Samsung Motion Photos are simple jpg files with an mp4 movie basically pasted at the end. This script is a simple wrapper around Exiftool, which does all the heavy lifting.
+
+### Requirements
+
+- Python3
+- Exiftool
+
+### Usage
+
+    getmotionfromphoto.py [options] motion_photo.jpg
+
+    Where options are:
+    -s, --split: Remove the video portion from the original file. WARNING: use at your own risk - it might be a good idea to make a backup first.
+
+The video file will then be saved under the same file name with the mp4 extension (e.g. "motion_photo.mp4").
